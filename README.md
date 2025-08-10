@@ -4,7 +4,12 @@ terminal secrets rotator written in rust.
 
 ### Getting started
 
-- install from homebrew **TODO**
+- install (todo: add to homebrew)
+
+```
+curl -fsSL https://raw.githubusercontent.com/soulsam480/rotor/refs/heads/master/install | bash
+```
+
 - run `rotor_bin init`, this does two things
   - adds the `rotor` shell function to `~/.zshrc`
   - initialized a `~/.secretsrc` file with examples if not present.
