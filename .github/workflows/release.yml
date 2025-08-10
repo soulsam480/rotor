@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build binary
+        run: cargo build --release --verbose
+
+      - name: Package for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd target/release
+          zip rotor_bin-windows.zip rotor_bin.exe
+          cd ../..
+      
+      - name: Determine Asset Name
+        id: asset_name
+        run: |
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            echo "ASSET_NAME=rotor_bin-windows.zip" >> $GITHUB_ENV
+            echo "ASSET_PATH=target/release/rotor_bin-windows.zip" >> $GITHUB_ENV
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            echo "ASSET_NAME=rotor_bin-macos" >> $GITHUB_ENV
+            echo "ASSET_PATH=target/release/rotor_bin" >> $GITHUB_ENV
+          else
+            echo "ASSET_NAME=rotor_bin-linux" >> $GITHUB_ENV
+            echo "ASSET_PATH=target/release/rotor_bin" >> $GITHUB_ENV
+          fi
+
+      - name: Upload binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ env.ASSET_PATH }}
+          asset_name: ${{ env.ASSET_NAME }}
+          tag: ${{ github.ref }}
+          overwrite: true

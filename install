@@ -1,0 +1,69 @@
+#!/bin/bash
+#
+# Usage:
+#   curl -fsSL https://your-domain.com/install | bash
+#
+
+set -euo pipefail
+
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+main() {
+    local GITHUB_REPO="sambitsahoo/rotor"
+    local BINARY_NAME="rotor_bin"
+    local INSTALL_DIR="$HOME/.local/bin"
+
+    local OS
+    OS="$(uname -s)"
+    case "$OS" in
+        Linux)
+            PLATFORM="linux"
+            ;;
+        Darwin)
+            PLATFORM="macos"
+            ;;
+        *)
+            echo "Error: Unsupported OS '$OS'."
+            exit 1
+            ;;
+    esac
+
+    if ! command_exists "curl"; then
+        echo "Error: curl is not installed."
+        exit 1
+    fi
+
+    echo "Fetching latest release from GitHub..."
+    local API_URL="https://api.github.com/repos/$GITHUB_REPO/releases/latest"
+    
+    local DOWNLOAD_URL
+    DOWNLOAD_URL=$(curl -sSL "$API_URL" | grep "browser_download_url.*${PLATFORM}" | cut -d '"' -f 4)
+
+    if [ -z "$DOWNLOAD_URL" ]; then
+        echo "Error: Could not find a download URL for your platform ($PLATFORM)."
+        exit 1
+    fi
+
+    mkdir -p "$INSTALL_DIR"
+
+    local TMP_FILE
+    TMP_FILE=$(mktemp)
+    echo "Downloading from $DOWNLOAD_URL..."
+    curl -L -o "$TMP_FILE" "$DOWNLOAD_URL"
+
+    local INSTALL_PATH="$INSTALL_DIR/$BINARY_NAME"
+    mv "$TMP_FILE" "$INSTALL_PATH"
+    chmod +x "$INSTALL_PATH"
+
+    echo ""
+    echo "'$BINARY_NAME' was installed successfully to '$INSTALL_PATH'"
+    echo "Make sure '$INSTALL_DIR' is in your PATH."
+    echo "You can add it to your shell profile (e.g., ~/.zshrc) with:"
+    echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+    echo ""
+    echo "Then, run 'rotor_bin init' to get started."
+}
+
+main
