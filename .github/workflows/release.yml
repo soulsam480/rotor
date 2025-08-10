@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - name: Checkout code
@@ -24,21 +24,11 @@ jobs:
 
       - name: Build binary
         run: cargo build --release --verbose
-
-      - name: Package for Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          cd target/release
-          zip rotor_bin-windows.zip rotor_bin.exe
-          cd ../..
       
       - name: Determine Asset Name
         id: asset_name
         run: |
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            echo "ASSET_NAME=rotor_bin-windows.zip" >> $GITHUB_ENV
-            echo "ASSET_PATH=target/release/rotor_bin-windows.zip" >> $GITHUB_ENV
-          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
             echo "ASSET_NAME=rotor_bin-macos" >> $GITHUB_ENV
             echo "ASSET_PATH=target/release/rotor_bin" >> $GITHUB_ENV
           else
