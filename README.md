@@ -25,3 +25,8 @@ curl -fsSL https://raw.githubusercontent.com/soulsam480/rotor/refs/heads/master/
 ### Potential improvements
 
 - directly set using `rotor set GEMINI_KEY opencode`
+
+### Unintalling
+
+- remove `~/.local/bin/rotor_bin`
+- remove `rotor` shell function from `~/.zshrc`
